@@ -71,28 +71,43 @@ class MLP:
             # Error using the sum-of-squares error function
             error = 0.5 * np.sum((self.outputs - targets) ** 2)
 
-            if (np.mod(n, 100) == 0):
+            if (np.mod(n, 100) == 0 or True):
                 print("Iteration: ", n, " Error: ", error)
 
             # backward phase
             # Compute the derivative of the output layer. NOTE: you will need to compute the derivative of
             # the softmax function. Hints: equation 4.55 in the book.
-            hOutput = self.hidden2.dot(self.weights3)
-            dErrorWithRespectToHOutput = self.softmaxDerivative(hOutput) * (self.softmax(hOutput) - targets)
-            deltao = dErrorWithRespectToHOutput.T.dot(self.hidden2)
+
+            hOutput = self.hidden2.dot(self.weights3) #(9000, 10)
+            dErrorWithRespectToHOutput = self.softmaxDerivative(hOutput) * (self.outputs - targets) #(9000,10)
+            deltao = self.hidden2.T.dot(dErrorWithRespectToHOutput) #(6, 10)
 
             # compute the derivative of the second hidden layer
-            deltah2 = None
+
+            hHidden2 = self.hidden1.dot(self.weights2) #(9000, 5)
+            dErrorWithRespectToHHidden2 = dErrorWithRespectToHOutput.dot(self.weights3.T).sum(axis=1, keepdims=True) #(9000, 1)
+            dErrorWithRespectToHHidden2 = self.sigmoidDerivative(hHidden2) * dErrorWithRespectToHHidden2 #(9000, 5)
+            deltah2 = self.hidden1.T.dot(dErrorWithRespectToHHidden2) #(6, 5)
 
             # compute the derivative of the first hidden layer
-            deltah1 = None
+
+            hHidden1 = inputs.dot(self.weights1) #(9000, 5)
+            dErrorWithRespectToHHidden1 = dErrorWithRespectToHHidden2.dot(self.weights2.T).sum(axis=1, keepdims=True) #(9000, 1)
+            dErrorWithRespectToHHidden1 = self.sigmoidDerivative(hHidden1) * dErrorWithRespectToHHidden1 #(9000, 5)
+            deltah1 = inputs.T.dot(dErrorWithRespectToHHidden1) #(785, 5)
 
             # update the weights of the three layers: self.weights1, self.weights2 and self.weights3
             # here you can update the weights as we did in the week 4 lab (using gradient descent)
             # but you can also add the momentum
-            updatew1 = None
-            updatew2 = None
-            updatew3 = None
+
+            # Calculating momentum to add on by using the update of the previous iteration
+            momentumw1 = self.momentum * updatew1
+            momentumw2 = self.momentum * updatew2
+            momentumw3 = self.momentum * updatew3
+
+            updatew1 = eta * deltah1 + momentumw1
+            updatew2 = eta * deltah2 + momentumw2
+            updatew3 = eta * deltao  + momentumw3
 
             self.weights1 -= updatew1
             self.weights2 -= updatew2
@@ -118,14 +133,14 @@ class MLP:
         # layer 1
         # compute the forward pass on the first hidden layer with the sigmoid function
 
-        self.hidden1 = self.sigmoid(self.beta, inputs.dot(self.weights1))
+        self.hidden1 = self.sigmoid(inputs.dot(self.weights1))
         # Add the bias inputs for use in the next layer
         self.hidden1 = np.concatenate((self.hidden1, -np.ones((ndata, 1))), axis=1)
 
         # layer 2
         # compute the forward pass on the second hidden layer with the sigmoid function
 
-        self.hidden2 = self.sigmoid(self.beta, self.hidden1.dot(self.weights2))
+        self.hidden2 = self.sigmoid(self.hidden1.dot(self.weights2))
         # Add the bias inputs for use in the next layer
         self.hidden2 = np.concatenate((self.hidden2, -np.ones((ndata, 1))), axis=1)
 
@@ -169,14 +184,16 @@ class MLP:
 
         return cm
 
-    def sigmoid(self, beta, x):
-      return 1 / (1 + np.exp(-beta * x))
+    def sigmoid(self, x):
+      return 1.0 / (1.0 + np.exp(-self.beta * x))
 
-    def softmaxDerivative(self, beta, x):
-      return beta * sigmoid(beta, x) * (1 - sigmoid(beta, x))
+    def sigmoidDerivative(self, x):
+      return self.beta * self.sigmoid(x) * (1.0 - self.sigmoid(x))
 
     def softmax(self, x):
-      return np.exp(x) / (np.exp(x).sum(axis=-1, keepdims=True))
+      #normalisers = np.sum(np.exp(x),axis=1)*np.ones((1,np.shape(x)[0]))
+      #return np.transpose(np.transpose(np.exp(x))/normalisers)
+      return np.exp(x) / (np.exp(x).sum(axis=1, keepdims=True))
 
     def softmaxDerivative(self, x):
-      return self.softmax(x) * (np.ones(x.shape) - self.softmax(x))
+      return self.softmax(x) * (1.0 - self.softmax(x))
