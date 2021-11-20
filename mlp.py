@@ -78,23 +78,23 @@ class MLP:
             # Compute the derivative of the output layer. NOTE: you will need to compute the derivative of
             # the softmax function. Hints: equation 4.55 in the book.
 
-            hOutput = self.hidden2.dot(self.weights3) #(9000, 10)
-            dErrorWithRespectToHOutput = self.softmaxDerivative(hOutput) * (self.outputs - targets) #(9000,10)
-            deltao = self.hidden2.T.dot(dErrorWithRespectToHOutput) #(6, 10)
+            hOutput = self.hidden2.dot(self.weights3)
+            dErrorWithRespectToHOutput = self.softmaxDerivative(hOutput) * (self.outputs - targets) 
+            deltao = self.hidden2.T.dot(dErrorWithRespectToHOutput)
 
             # compute the derivative of the second hidden layer
 
-            hHidden2 = self.hidden1.dot(self.weights2) #(9000, 5)
-            dErrorWithRespectToHHidden2 = dErrorWithRespectToHOutput.dot(self.weights3.T).sum(axis=1, keepdims=True) #(9000, 1)
-            dErrorWithRespectToHHidden2 = self.sigmoidDerivative(hHidden2) * dErrorWithRespectToHHidden2 #(9000, 5)
-            deltah2 = self.hidden1.T.dot(dErrorWithRespectToHHidden2) #(6, 5)
+            hHidden2 = self.hidden1.dot(self.weights2)
+            dErrorWithRespectToHHidden2 = dErrorWithRespectToHOutput.dot(self.weights3.T).sum(axis=1, keepdims=True)
+            dErrorWithRespectToHHidden2 = self.sigmoidDerivative(hHidden2) * dErrorWithRespectToHHidden2
+            deltah2 = self.hidden1.T.dot(dErrorWithRespectToHHidden2)
 
             # compute the derivative of the first hidden layer
 
-            hHidden1 = inputs.dot(self.weights1) #(9000, 5)
-            dErrorWithRespectToHHidden1 = dErrorWithRespectToHHidden2.dot(self.weights2.T).sum(axis=1, keepdims=True) #(9000, 1)
-            dErrorWithRespectToHHidden1 = self.sigmoidDerivative(hHidden1) * dErrorWithRespectToHHidden1 #(9000, 5)
-            deltah1 = inputs.T.dot(dErrorWithRespectToHHidden1) #(785, 5)
+            hHidden1 = inputs.dot(self.weights1)
+            dErrorWithRespectToHHidden1 = dErrorWithRespectToHHidden2.dot(self.weights2.T).sum(axis=1, keepdims=True)
+            dErrorWithRespectToHHidden1 = self.sigmoidDerivative(hHidden1) * dErrorWithRespectToHHidden1
+            deltah1 = inputs.T.dot(dErrorWithRespectToHHidden1)
 
             # update the weights of the three layers: self.weights1, self.weights2 and self.weights3
             # here you can update the weights as we did in the week 4 lab (using gradient descent)
@@ -191,8 +191,6 @@ class MLP:
       return self.beta * self.sigmoid(x) * (1.0 - self.sigmoid(x))
 
     def softmax(self, x):
-      #normalisers = np.sum(np.exp(x),axis=1)*np.ones((1,np.shape(x)[0]))
-      #return np.transpose(np.transpose(np.exp(x))/normalisers)
       return np.exp(x) / (np.exp(x).sum(axis=1, keepdims=True))
 
     def softmaxDerivative(self, x):
