@@ -71,7 +71,7 @@ class MLP:
             # Error using the sum-of-squares error function
             error = 0.5 * np.sum((self.outputs - targets) ** 2)
 
-            if (np.mod(n, 100) == 0 or True):
+            if (np.mod(n, 100) == 0):
                 print("Iteration: ", n, " Error: ", error)
 
             # backward phase
@@ -85,15 +85,15 @@ class MLP:
             # compute the derivative of the second hidden layer
 
             hHidden2 = self.hidden1.dot(self.weights2)
-            dErrorWithRespectToHHidden2 = dErrorWithRespectToHOutput.dot(self.weights3.T).sum(axis=1, keepdims=True)
-            dErrorWithRespectToHHidden2 = self.sigmoidDerivative(hHidden2) * dErrorWithRespectToHHidden2
+            dErrorWithRespectToHidden2 = dErrorWithRespectToHOutput.dot(self.weights3.T)#.sum(axis=1, keepdims=True)
+            dErrorWithRespectToHHidden2 = self.sigmoidDerivative(hHidden2) * dErrorWithRespectToHidden2[:, :-1]
             deltah2 = self.hidden1.T.dot(dErrorWithRespectToHHidden2)
 
             # compute the derivative of the first hidden layer
 
             hHidden1 = inputs.dot(self.weights1)
-            dErrorWithRespectToHHidden1 = dErrorWithRespectToHHidden2.dot(self.weights2.T).sum(axis=1, keepdims=True)
-            dErrorWithRespectToHHidden1 = self.sigmoidDerivative(hHidden1) * dErrorWithRespectToHHidden1
+            dErrorWithRespectToHidden1 = dErrorWithRespectToHHidden2.dot(self.weights2.T)#.sum(axis=1, keepdims=True)
+            dErrorWithRespectToHHidden1 = self.sigmoidDerivative(hHidden1) * dErrorWithRespectToHidden1[:, :-1]
             deltah1 = inputs.T.dot(dErrorWithRespectToHHidden1)
 
             # update the weights of the three layers: self.weights1, self.weights2 and self.weights3
