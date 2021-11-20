@@ -85,14 +85,14 @@ class MLP:
             # compute the derivative of the second hidden layer
 
             hHidden2 = self.hidden1.dot(self.weights2)
-            dErrorWithRespectToHidden2 = dErrorWithRespectToHOutput.dot(self.weights3.T)#.sum(axis=1, keepdims=True)
+            dErrorWithRespectToHidden2 = dErrorWithRespectToHOutput.dot(self.weights3.T)
             dErrorWithRespectToHHidden2 = self.sigmoidDerivative(hHidden2) * dErrorWithRespectToHidden2[:, :-1]
             deltah2 = self.hidden1.T.dot(dErrorWithRespectToHHidden2)
 
             # compute the derivative of the first hidden layer
 
             hHidden1 = inputs.dot(self.weights1)
-            dErrorWithRespectToHidden1 = dErrorWithRespectToHHidden2.dot(self.weights2.T)#.sum(axis=1, keepdims=True)
+            dErrorWithRespectToHidden1 = dErrorWithRespectToHHidden2.dot(self.weights2.T)
             dErrorWithRespectToHHidden1 = self.sigmoidDerivative(hHidden1) * dErrorWithRespectToHidden1[:, :-1]
             deltah1 = inputs.T.dot(dErrorWithRespectToHHidden1)
 
