@@ -77,7 +77,9 @@ class MLP:
             # backward phase
             # Compute the derivative of the output layer. NOTE: you will need to compute the derivative of
             # the softmax function. Hints: equation 4.55 in the book.
-            deltao = None
+            hOutput = self.hidden2.dot(self.weights3)
+            dErrorWithRespectToHOutput = self.softmaxDerivative(hOutput) * (self.softmax(hOutput) - targets)
+            deltao = dErrorWithRespectToHOutput.T.dot(self.hidden2)
 
             # compute the derivative of the second hidden layer
             deltah2 = None
@@ -111,17 +113,26 @@ class MLP:
         # because we are working with multi-class classification.
         #############################################################################
 
+        ndata = inputs.shape[0]
+
         # layer 1
         # compute the forward pass on the first hidden layer with the sigmoid function
-        self.hidden1 = None
+
+        self.hidden1 = self.sigmoid(self.beta, inputs.dot(self.weights1))
+        # Add the bias inputs for use in the next layer
+        self.hidden1 = np.concatenate((self.hidden1, -np.ones((ndata, 1))), axis=1)
 
         # layer 2
         # compute the forward pass on the second hidden layer with the sigmoid function
-        self.hidden2 = None
+
+        self.hidden2 = self.sigmoid(self.beta, self.hidden1.dot(self.weights2))
+        # Add the bias inputs for use in the next layer
+        self.hidden2 = np.concatenate((self.hidden2, -np.ones((ndata, 1))), axis=1)
 
         # output layer
         # compute the forward pass on the output layer with softmax function
-        outputs = None
+
+        outputs = self.softmax(self.hidden2.dot(self.weights3))
 
         #############################################################################
         # END of YOUR CODE
@@ -158,3 +169,14 @@ class MLP:
 
         return cm
 
+    def sigmoid(self, beta, x):
+      return 1 / (1 + np.exp(-beta * x))
+
+    def softmaxDerivative(self, beta, x):
+      return beta * sigmoid(beta, x) * (1 - sigmoid(beta, x))
+
+    def softmax(self, x):
+      return np.exp(x) / (np.exp(x).sum(axis=-1, keepdims=True))
+
+    def softmaxDerivative(self, x):
+      return self.softmax(x) * (np.ones(x.shape) - self.softmax(x))
